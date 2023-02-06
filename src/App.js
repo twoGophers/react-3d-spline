@@ -1,5 +1,6 @@
 import { LocomotiveScrollProvider } from 'react-locomotive-scroll';
 import React, { useRef, useState, useEffect } from 'react';
+import Navigation from './components/navigation/Navigation';
 
 //Components
 const Screen1 = React.lazy(() => import ("./components/screen/Screen1")) ;
@@ -7,11 +8,26 @@ const Screen1 = React.lazy(() => import ("./components/screen/Screen1")) ;
 function App() {
 
   const [ preloader, setPreloader ] = useState(true);
-
   const containerRef = useRef(null);
 
-  
+  //Change scroll main, but not work in Locomotiv
+  const [scrollPosition, setSrollPosition] = useState(0);
+  const handleScroll = () => {
+      const position = window.pageYOffset;
+      setSrollPosition(position);
+  };
 
+  useEffect(() => {
+    setPreloader(false);
+  }, []);
+
+  //Scroll main
+  useEffect(() => {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => {
+          window.removeEventListener('scroll', handleScroll);
+      };
+  }, []);
 
   return (
     <>
@@ -22,31 +38,37 @@ function App() {
           : <LocomotiveScrollProvider
               options={
                 {
-                  smooth: true,
-                  multiplier: 1, // скорость прокрутки скролла
-                  offset: [0, 0],
-                  class: 'is-inview'
+                  smooth: true, 
+                  multiplier: 0.3, // скорость прокрутки скролла
                   // ... all available Locomotive Scroll instance options 
                 }
               }
               watch={
-                [
-                  //..all the dependencies you want to watch to update the scroll.
-                  //  Basicaly, you would want to watch page/location changes
-                  //  For exemple, on Next.js you would want to watch properties like `router.asPath` (you may want to add more criterias if the instance should be update on locations with query parameters)
-                ]
+                []
               }
+              onLocationChange={scroll => scroll.scrollTo(0, { duration: 0, disableLerp: true })} // If you want to reset the scroll position to 0 for example
+              onUpdate={() => console.log('Updated, but not on location change!')}
               containerRef={containerRef}
               >
-                  <div className="App" data-scroll-container  ref={containerRef}>
+                  <div className="App" id='app' data-scroll-container ref={containerRef}>
                     <section
                       data-scroll-section
-                      data-scroll-repeat="true"
-                      >
-                      <Screen1 />
+                    >
+                      <Navigation />
                     </section>
-                    <section data-scroll-section>
-                      <div style={{ width: `100vw`, height: `300vh` }}></div>
+                    <section
+                      data-scroll-section
+                      className='section-one container'
+                      >
+                        {/* <Screen1 preloader={preloader} /> */}
+                    </section>
+                    <section 
+                    data-scroll-section
+                    >
+                      <div 
+                        className='scroll-screen2'
+                        data-scroll-repeat="true"
+                        style={{ width: `100vw`, height: `300vh` }}></div>
                     </section>
                 </div>
             </LocomotiveScrollProvider>
