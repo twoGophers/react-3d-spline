@@ -5,32 +5,16 @@ import { useEffect, useState, useRef } from 'react';
 export default function Navigation() {
 
     const [ logo, setLogo ] = useState(false);
-
-    const positionNavigation = (value) => {
-        console.log(value);
-    }
-
-    useEffect(() => {
-        let positionScroll = document.querySelector('.navigation__control');
-        if(positionScroll.classList.contains('is-inview')) {
-            window.addEventListener("scroll", positionNavigation(true));
-        } else {
-            window.addEventListener("scroll", positionNavigation(false));
-        }
-        return () => {
-            window.removeEventListener('scroll', positionNavigation);
-        };
-    }, []);
-
+    const positionNavigate = useRef();
 
   return (
-    <div className='navigation'>
+    <div className='navigation'
+        data-scroll
+    >
         <div 
-            data-scroll
             className='navigation__control'
         ></div>
         <div 
-            data-scroll
             className='navigation__block'
         >
             <div className="navigation__logo">

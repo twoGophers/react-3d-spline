@@ -1,6 +1,12 @@
-import { LocomotiveScrollProvider } from 'react-locomotive-scroll';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
+
 import Navigation from './components/navigation/Navigation';
+
+import { LocomotiveScrollProvider } from 'react-locomotive-scroll';
+import { gsap } from "gsap";
+import { ScrollTrigger } from 'gsap/all';
+
+gsap.registerPlugin(ScrollTrigger);
 
 //Components
 const Screen1 = React.lazy(() => import ("./components/screen/Screen1")) ;
@@ -8,70 +14,43 @@ const Screen1 = React.lazy(() => import ("./components/screen/Screen1")) ;
 function App() {
 
   const [ preloader, setPreloader ] = useState(true);
-  const containerRef = useRef(null);
 
-  //Change scroll main, but not work in Locomotiv
-  const [scrollPosition, setSrollPosition] = useState(0);
-  const handleScroll = () => {
-      const position = window.pageYOffset;
-      setSrollPosition(position);
-  };
+  const app = useRef(null);
 
   useEffect(() => {
     setPreloader(false);
   }, []);
 
-  //Scroll main
-  useEffect(() => {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      return () => {
-          window.removeEventListener('scroll', handleScroll);
-      };
-  }, []);
+  useLayoutEffect(() => {
+    let ctx = gsap.context(() => {
+      gsap.from('.test', {
+        rotation: 360,
+        duration: 2,
+        repeat: -1,
+        yoyo: true
+      })
+    }, app);
 
+    return () => ctx.revert();
+
+  }, [])
+  
   return (
     <>
         { preloader 
           ? <div>
               loading
             </div>
-          : <LocomotiveScrollProvider
-              options={
-                {
-                  smooth: true, 
-                  multiplier: 0.3, // скорость прокрутки скролла
-                  // ... all available Locomotive Scroll instance options 
-                }
-              }
-              watch={
-                []
-              }
-              onLocationChange={scroll => scroll.scrollTo(0, { duration: 0, disableLerp: true })} // If you want to reset the scroll position to 0 for example
-              onUpdate={() => console.log('Updated, but not on location change!')}
-              containerRef={containerRef}
-              >
-                  <div className="App" id='app' data-scroll-container ref={containerRef}>
-                    <section
-                      data-scroll-section
-                    >
+          : 
+              <div ref={app} className="App">
+                  <section className='section-navigate'>
                       <Navigation />
-                    </section>
-                    <section
-                      data-scroll-section
-                      className='section-one container'
-                      >
-                        {/* <Screen1 preloader={preloader} /> */}
-                    </section>
-                    <section 
-                    data-scroll-section
-                    >
-                      <div 
-                        className='scroll-screen2'
-                        data-scroll-repeat="true"
-                        style={{ width: `100vw`, height: `300vh` }}></div>
-                    </section>
-                </div>
-            </LocomotiveScrollProvider>
+                  </section>
+                  <section className='section-one container' data-scroll-container>
+                      <Screen1 preloader={preloader} />
+                  </section >
+                  <div className='test' style={{ height: `200px`, width: `200px`, background: `red` }}></div>
+              </div>
         }
     </>
   );
